@@ -1,0 +1,3 @@
+show ip interface brief | exclude unassigned
+enable
+cisco
