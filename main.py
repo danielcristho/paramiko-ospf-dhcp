@@ -1,36 +1,87 @@
-import paramiko
-import json, getpass, time
+from multiprocessing import pool
+import re
+import paramiko, yaml, time
+from pprint import pprint
+from datetime import datetime
 
-with open('inventory.json', 'r') as f:
-    devices = json.load(f)
+sshClient = paramiko.SSHClient()
+sshClient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-with open('command.txt', 'r') as f:
-    commands = f.readlines()
+def readYaml(yamlFile):
+    with open(yamlFile) as f:
+        inventory = f.read()
 
-username = input('username: ')
-password = getpass.getpass('password: ')
+    inventoryDict = yaml.load(inventory)
+    return inventoryDict
 
-max_buffer = 65535
+def deviceCredentials(routerCred):
+    device = {
+            "ip": routerCred,
+            "username": "admin",
+            "password": "admin",
+    }
+    conn = sshClient.invoke_shell()
 
-def clearBuff(connection):
-    if connection.recv_ready():
-        return connection.recv(max_buffer)
+    if device['enable']:
+        conn.send("enable\n")
+        conn.send("cisco\n") #send secret
+        time.sleep(2)
 
-for device in devices.keys():
-    outputFileName = device + '_output.txt'
-    connection = paramiko.SSHClient()
-    connection.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    connection.connect(devices[device]['ip'], username=username, password=password, look_for_keys=False, allow_agent=False)
-    newConnection = connection.invoke_shell()
-    output = clearBuff(newConnection)
-    time.sleep(3)
-    newConnection.send("terminal length 0\n")
-    output = clearBuff(newConnection)
-    with open(outputFileName, 'wb') as f:
-        for command in commands:
-            newConnection.send(command)
-            time.sleep(2)
-            output = newConnection.recv(max_buffer)
-            print(output)
-            f.write(output)
-    newConnection.close()       
+#config ip address
+def configAddress(conn, ipConfig):
+    interface = ipConfig['interface']
+    ipAddr = ipConfig['ipAddress']
+    configList = ['interface {}'.format(interface),
+                    'ip address {}'.format(ipAddr),
+                    'no shutdown']
+
+    print (conn.send(configList))                
+
+#config DHCP
+def configDhcp(conn, dchpConfig):
+    pool = dchpConfig['pool']
+    network = dchpConfig['network']
+    gateway = dchpConfig['gateway']
+    configList = ['ip dhcp pool {}'.format(pool),
+                    'network {}'.format(network),
+                    'default-router {}'.format(gateway)]
+    print(conn.send(configList))
+
+#config OSPF
+def configOspf(conn, ospfConfig):
+    area = ospfConfig['area']
+    networkList  = ospfConfig['network']
+    confifList = ['router ospf 1']
+    for network in networkList:
+        confifList.append('network {} area {}'.format(network, area))
+    print(conn.send(confifList))
+
+def main():
+    yamlFile = 'inventory.yaml'
+    inventoryDict = readYaml(yamlFile)
+    pprint(inventoryDict)
+
+    for router in inventoryDict['DEVICE']:
+
+        routerCred = router['host']
+        print("=============================")
+        print("Configuring {}".format(routerCred))
+        print("=============================")
+        
+        conn = deviceCredentials(routerCred)
+
+        ipConfig = router['intConfig']
+        for conf in ipConfig:
+            configAddress(conn, conf)
+
+        dhcpConfig = router['dhcpConfig']
+        for config in dhcpConfig:
+            configDhcp(conn, config)
+
+        ospfConfig = router['ospfConfig']
+        for config in ospfConfig:
+            configOspf(conn, config)
+
+        sshClient.close()    
+main()    
+
