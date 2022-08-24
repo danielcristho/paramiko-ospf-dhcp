@@ -17,11 +17,41 @@ DEVICE:
     ospfConfig:
       - area: 0
         network:
-          - 10.10.1.1 0.0.0.248
+          - 10.10.1.1 0.0.0.7
           - 172.16.1.0 0.0.0.255
           - 172.16.2.0 0.0.0.255
 
   - host: 10.10.10.252
     intConfig:
-      - interface:                   
+      - interface: FastEthernet4/0
+        ipAddress: 172.17.1.1 255.255.255.0
+      - interface: FastEthernet1/0
+        ipAddress: 10.10.1.2 255.255.255.248
+      - interface: FastEthernet3/0
+        ipAddress: 10.10.2.1 255.255.255.248
+    dchpConfig:
+      - pool: network20
+        network: 172.17.1.0 255.255.255.0
+        gateway: 172.17.1.1
+    ospfConfig:
+      - area: 0
+        network: 
+          - 10.10.1.1 0.0.0.7 
+          - 10.10.2.0 0.0.0.7
+          - 172.17.1.0 0.0.0.255
+  - host: 10.10.10.253
+    intConfig:
+      - interface: FastEthernet4/0
+        ipAddress: 172.18.1.1 255.255.255.0
+      - interface: FastEthernet2/0
+        ipAddress: 10.10.2.2 255.255.255.248
+    dchpConfig:
+      - pool: network30
+        network: 172.18.1.0 255.255.255.0
+        gateway: 172.18.1.1 
+    ospfConfig:
+      - area: 0
+        network: 
+          - 10.10.2.0 0.0.0.7
+          - 172.18.1.0 0.0.0.255             
 
