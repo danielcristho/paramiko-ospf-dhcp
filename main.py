@@ -1,5 +1,3 @@
-from multiprocessing import pool
-import re
 import paramiko, yaml, time
 from pprint import pprint
 from datetime import datetime
