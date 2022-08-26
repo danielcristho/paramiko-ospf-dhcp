@@ -1,11 +1,11 @@
 DEVICE:
   - host: 10.10.10.251
     intConfig:
-      - interface: FastEthernet3/0
+      - interface: GigabitEthernet3/0
         ipAddress: 172.16.1.1 255.255.255.0
-      - interface: FastEthernet4/0
+      - interface: GigabitEthernet4/0
         ipAddress: 172.16.2.1 255.255.255.0
-      - interface: FastEthernet2/0
+      - interface: GigibitEthernet2/0
         ipAddress: 10.10.1.1 255.255.255.248
     dchpConfig:
       - pool: network10
@@ -23,11 +23,11 @@ DEVICE:
 
   - host: 10.10.10.252
     intConfig:
-      - interface: FastEthernet4/0
+      - interface: GigabitEthernet4/0
         ipAddress: 172.17.1.1 255.255.255.0
-      - interface: FastEthernet1/0
+      - interface: GigabitEthernet1/0
         ipAddress: 10.10.1.2 255.255.255.248
-      - interface: FastEthernet3/0
+      - interface: GigabitEthernet3/0
         ipAddress: 10.10.2.1 255.255.255.248
     dchpConfig:
       - pool: network20
@@ -41,10 +41,12 @@ DEVICE:
           - 172.17.1.0 0.0.0.255
   - host: 10.10.10.253
     intConfig:
-      - interface: FastEthernet4/0
+      - interface: GigabitEthernet4/0
         ipAddress: 172.18.1.1 255.255.255.0
-      - interface: FastEthernet2/0
+      - interface: GigabitEthernet2/0
         ipAddress: 10.10.2.2 255.255.255.248
+      - interface: GigabitEthernet3/0
+        ipAddress: 10.10.3.1 255.255.255.248
     dchpConfig:
       - pool: network30
         network: 172.18.1.0 255.255.255.0
@@ -53,5 +55,4 @@ DEVICE:
       - area: 0
         network: 
           - 10.10.2.0 0.0.0.7
-          - 172.18.1.0 0.0.0.255             
-
+          - 172.18.1.0 0.0.0.255
